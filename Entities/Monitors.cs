@@ -8,6 +8,8 @@
         public string Pulgadas { get; set; }
         public string Resolución { get; set; }
         public float Precio { get; set; }
+        public bool Disponible { get; set; }
+        public Pedidos pedidos { get; set; }
 
     }
 }

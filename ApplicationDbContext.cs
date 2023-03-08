@@ -11,5 +11,6 @@ namespace Monitores_WebApp
         }
 
         public DbSet<Monitors> Monitores { get; set; }
+        public DbSet<Pedidos> pedidos { get; set; }
     }
 }
