@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Monitores_WebApp.Entities;
 
 namespace Monitores_WebApp.Controllers
@@ -7,15 +8,56 @@ namespace Monitores_WebApp.Controllers
     [Route("api/monitores")]
     public class MonitoresCtrl:ControllerBase
     {
-        [HttpGet]
-        public ActionResult<List<Monitors>> Get()
+        private readonly ApplicationDbContext dbContext;
+        public MonitoresCtrl(ApplicationDbContext context)
         {
-            return new List<Monitors>()
-            {
-                new Monitors() {Id = 1, Marca = "LB", Frecuencia = "60hz", Pulgadas = "9", Resolución = "4K", Precio = 789},
+            this.dbContext = context;
+        }
 
-                new Monitors() {Id = 2, Marca = "FF", Frecuencia = "50hz", Pulgadas = "10", Resolución = "1080p", Precio = 900}
-            };
+        [HttpPost]
+        public async Task<ActionResult> Post(Monitors monitors)
+        {
+            dbContext.Add(monitors);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Monitors>>> Get()
+        {
+            return await dbContext.Monitores.Include(x => x.pedidos).ToListAsync();
+        }
+
+        [HttpPut("{id:int}")] // api/monitores/1
+
+        public async Task<ActionResult> Put(Monitors monitors, int id)
+        {
+            if(monitors.Id != id)
+            {
+                return BadRequest("El id del monitor no coincide con la estrablecido de la url");
+            }
+
+            dbContext.Update(monitors);
+            await dbContext.SaveChangesAsync();
+            return Ok();
+
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var exist = await dbContext.Monitores.AnyAsync(x => x.Id == id);
+            if (!exist)
+            {
+                return NotFound();
+            }
+
+            dbContext.Remove(new Monitors()
+            {
+                Id = id,
+            });
+            await dbContext.SaveChangesAsync();
+            return Ok();
         }
     }
 }
